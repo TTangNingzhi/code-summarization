@@ -1,6 +1,6 @@
 # Code Summarization
 
-Course project for CSE 60657 Natural Language Processing, Spring 2023, University of Notre Dame.
+Course project for CSE 60657 Natural Language Processing, Fall 2023, University of Notre Dame.
 
 ## Dataset
 
