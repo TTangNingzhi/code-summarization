@@ -48,14 +48,12 @@ def test(data, model, vocab):
 
 
 if __name__ == '__main__':
-    train_data = read_parallel(get_data_path(language, 'train'), 0, 0)
+    train_data = read_parallel(get_data_path(language, 'train'), 1, 1)
     dev_data = read_parallel(get_data_path(language, 'dev'), 0, 0)
     test_data = read_parallel(get_data_path(language, 'test'), 0, 0)
 
     fun_vocab = Vocab()
     com_vocab = Vocab()
-
-    print("Building vocabulary and corpus...")
     for fun, com in tqdm(train_data):
         fun_vocab |= fun
         com_vocab |= com

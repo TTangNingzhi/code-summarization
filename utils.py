@@ -7,7 +7,7 @@ class Vocab(collections.abc.MutableSet):
     """Set-like data structure that can change words into numbers and back."""
 
     def __init__(self):
-        words = {'<BOS>', '<EOS>', '<UNK>'}
+        words = {'<bos>', '<eos>', '<unk>', '<pad>'}
         self.num_to_word = list(words)
         self.word_to_num = {word: num for num, word in enumerate(self.num_to_word)}
 
@@ -37,28 +37,22 @@ class Vocab(collections.abc.MutableSet):
         if word in self.word_to_num:
             return self.word_to_num[word]
         else:
-            return self.word_to_num['<UNK>']
+            return self.word_to_num['<unk>']
 
     def denumberize(self, num):
         """Convert a number into a word."""
         return self.num_to_word[num]
 
 
-def read_parallel(data_path, num_bos=1, num_eos=1):
-    """Read data from the files named by `ffilename` and `efilename`.
-
-    The files should have the same number of lines.
-
-    Arguments:
-      - ffilename: str
-      - efilename: str
-    Returns: list of pairs of lists of strings. <BOS> and <EOS> are added to all sentences.
-    """
+def read_parallel(data_path, num_bos=1, num_eos=1, max_fun_len=1600, max_com_len=205):
+    # print("max fun len:", max_fun_len, "max com len:", max_com_len)
     ffilename, efilename = data_path
     data = []
     for (fline, eline) in zip(open(ffilename, encoding='utf-8'), open(efilename, encoding='utf-8')):
-        fwords = ['<BOS>'] * num_bos + fline.lower().split() + ['<EOS>'] * num_eos
-        ewords = ['<BOS>'] * num_bos + eline.lower().split() + ['<EOS>'] * num_eos
+        fwords = ['<bos>'] * num_bos + fline.lower().split() + ['<eos>'] * num_eos
+        ewords = ['<bos>'] * num_bos + eline.lower().split() + ['<eos>'] * num_eos
+        if len(fwords) > max_fun_len or len(ewords) > max_com_len:
+            continue
         data.append((fwords, ewords))
     return data
 
@@ -78,7 +72,6 @@ def get_k(language, fun_len):
 
 
 def calculate_metrics(reference, hypothesis):
-    # nltk.download('wordnet')
     precision = len(set(hypothesis) & set(reference)) / len(set(hypothesis))
     recall = len(set(hypothesis) & set(reference)) / len(set(reference))
     bleu = nltk.translate.bleu_score.sentence_bleu([' '.join(reference)], ' '.join(hypothesis))
