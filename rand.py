@@ -9,7 +9,6 @@ def test(data):
         fun, com = data[i]
         k = get_k(language, len(set(fun)))
         k_words = np.random.choice(list(set(fun)), k, replace=False)
-        print(com, k_words)
         metrics = calculate_metrics(com, k_words)
         avg_precision += metrics['precision']
         avg_recall += metrics['recall']

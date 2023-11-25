@@ -9,6 +9,8 @@ from torch.utils.data import DataLoader, Dataset
 import math
 import os
 
+sample_method = 'topk'  # 'topk', 'ancestral', 'greedy'
+
 
 class Transformer(nn.Module):
     def __init__(self, src_vocab, tgt_vocab, d_model=512, nhead=8, num_encoder_layers=6, num_decoder_layers=6,
@@ -46,16 +48,15 @@ class Transformer(nn.Module):
             output = self(src_tokens, tgt_tensor, tgt_mask=tgt_mask)
 
             # beam search with size 4 and length penalty 0.6 (?)
-
-            # top-k sampling
-            topk = torch.topk(output[0, -1, :], k=100)
-            next_token = topk[1][torch.multinomial(torch.softmax(topk[0], dim=-1), num_samples=1).item()].item()
-
-            # ancestral sampling
-            # next_token = torch.multinomial(torch.softmax(output[0, -1, :], dim=-1), num_samples=1).item()
-
-            # greedy search
-            # next_token = torch.argmax(output[0, -1, :]).item()
+            if sample_method == 'topk':
+                topk = torch.topk(output[0, -1, :], k=100)
+                next_token = topk[1][torch.multinomial(torch.softmax(topk[0], dim=-1), num_samples=1).item()].item()
+            elif sample_method == 'ancestral':
+                next_token = torch.multinomial(torch.softmax(output[0, -1, :], dim=-1), num_samples=1).item()
+            elif sample_method == 'greedy':
+                next_token = torch.argmax(output[0, -1, :]).item()
+            else:
+                next_token = self.tgt_vocab.numberize('<eos>')
 
             tgt_tokens.append(next_token)
             if next_token == self.tgt_vocab.numberize('<eos>'):
@@ -126,7 +127,7 @@ if __name__ == '__main__':
     dev_data = read_parallel(get_data_path(language, 'dev'), 0, 0)
     test_data = read_parallel(get_data_path(language, 'test'), 0, 0)
 
-    out_dir = 'out/' + language + '/transformer'
+    out_dir = 'out/' + language + '/transformer/' + sample_method
 
     fun_vocab = Vocab()
     com_vocab = Vocab()

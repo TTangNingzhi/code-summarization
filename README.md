@@ -8,12 +8,22 @@ The dataset is downloaded from [NeuralCodeSum](https://github.com/wasiahmad/Neur
 
 ## Model
 
-Vector Space Model (VSM)
-
-- VSM-RAND: rand.py
+- VSM-RAND (Vector Space Model): rand.py
 - VSM-TFIDF: tfidf.py
+- Transformer: transformer.py
+- GPT-4: gpt.py
+
+## Data Preprocessing
+
+Since a small portion of the code/comments are too long and seem to be wired (e.g., the comment is just a copy of the
+code), the cuda memory is not enough to train such pieces of data, i.e., large input embeddings. Thus, we filter out
+those data that are too long. The threshold is set as 1600 tokens, which larger than 99.9% quantile of the distribution
+of code snippets length. Thus, less than 0.1% of the data are filtered out but the training process can be finished.
 
 ## Prompt
+
+Below is the prompt for the GPT-4 model (Java dataset). For convenience, we just generate the first 100 lines of the
+test dataset for evaluation.
 
 ```
 You are a software engineer working code summarization. Given a set of code snippets, you need to write a short summary for each of them in natural language. For example,
@@ -38,17 +48,18 @@ Now, it is your turn. Please follow the example above, just write a short summar
 
 Code snippets:
 
-[XXXXX]
+[INPUT CODE SNIPPETS HERE]
 
 Summaries (You need to write):
 ```
-
-## Contact
-
-Ningzhi Tang (ntang@nd.edu) and Gelei Xu (gxu4@nd.edu)
 
 ## Acknowledgement
 
 Thanks to ChatGPT and PyTorch
 tutorial [Language Translation with nn.Transformer and TorchText](https://pytorch.org/tutorials/beginner/translation_transformer.html)
 for the code reference of implementing Transformer.
+
+## Contact
+
+Ningzhi Tang (ntang@nd.edu) and Gelei Xu (gxu4@nd.edu)
+
