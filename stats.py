@@ -26,5 +26,5 @@ print(f"The best fit line is com_len = {model.coef_[0]:.4f} * fun_len + {model.i
 print("Max. Function Length: {:.2f}".format(np.max(fun_len)))
 print("Max. Javadoc Length: {:.2f}".format(np.max(com_len)))
 
-print("0.999 quantile Function Length: {:.2f}".format(np.quantile(fun_len, 0.999)))
-print("0.999 quantile Javadoc Length: {:.2f}".format(np.quantile(com_len, 0.999)))
+print("0.99 quantile Function Length: {:.2f}".format(np.quantile(fun_len, 0.99)))
+print("0.99 quantile Javadoc Length: {:.2f}".format(np.quantile(com_len, 0.99)))

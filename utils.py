@@ -72,9 +72,13 @@ def get_k(language, fun_len):
 
 
 def calculate_metrics(reference, hypothesis):
-    precision = len(set(hypothesis) & set(reference)) / len(set(hypothesis))
-    recall = len(set(hypothesis) & set(reference)) / len(set(reference))
-    bleu = nltk.translate.bleu_score.sentence_bleu([' '.join(reference)], ' '.join(hypothesis))
-    meteor = nltk.translate.meteor_score.meteor_score([reference], hypothesis)
-    rouge_l = Rouge().get_scores(' '.join(hypothesis), ' '.join(reference))[0]['rouge-l']['f']
-    return {'precision': precision, 'recall': recall, 'bleu': bleu, 'meteor': meteor, 'rouge-l': rouge_l}
+    try:
+        precision = len(set(hypothesis) & set(reference)) / len(set(hypothesis))
+        recall = len(set(hypothesis) & set(reference)) / len(set(reference))
+        bleu = nltk.translate.bleu_score.sentence_bleu([' '.join(reference)], ' '.join(hypothesis))
+        meteor = nltk.translate.meteor_score.meteor_score([reference], hypothesis)
+        rouge_l = Rouge().get_scores(' '.join(hypothesis), ' '.join(reference))[0]['rouge-l']['f']
+        return {'precision': precision, 'recall': recall, 'bleu': bleu, 'meteor': meteor, 'rouge-l': rouge_l}
+    except:
+        print("Error in calculating metrics", reference, hypothesis)
+        return {'precision': 0, 'recall': 0, 'bleu': 0, 'meteor': 0, 'rouge-l': 0}
