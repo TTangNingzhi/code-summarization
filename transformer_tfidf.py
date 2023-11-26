@@ -12,22 +12,26 @@ import os
 sample_method = 'topk'  # 'topk', 'ancestral', 'greedy'
 
 
-class Transformer(nn.Module):
-    def __init__(self, src_vocab, tgt_vocab, d_model=512, nhead=8, num_encoder_layers=6, num_decoder_layers=6,
+class TransformerTFIDF(nn.Module):
+    def __init__(self, src_vocab, tgt_vocab, tfidf, d_model=512, nhead=8, num_encoder_layers=6, num_decoder_layers=6,
                  dim_feedforward=2048, dropout=0.1):
-        super(Transformer, self).__init__()
+        super(TransformerTFIDF, self).__init__()
         self.src_vocab = src_vocab
         self.tgt_vocab = tgt_vocab
         self.src_embed = nn.Embedding(len(src_vocab), d_model)
         self.tgt_embed = nn.Embedding(len(tgt_vocab), d_model)
         self.pos_encoder = PositionalEncoding(d_model, dropout, max_len=1700)
+        self.tfidf = tfidf
         self.transformer = nn.Transformer(d_model, nhead, num_encoder_layers, num_decoder_layers, dim_feedforward,
                                           dropout, batch_first=True)
         self.out = nn.Linear(d_model, len(tgt_vocab))
 
     def forward(self, src, tgt, src_mask=None, tgt_mask=None, memory_mask=None, src_key_padding_mask=None,
                 tgt_key_padding_mask=None, memory_key_padding_mask=None):
-        src = self.src_embed(src) * math.sqrt(self.transformer.d_model)
+        src_weight = torch.zeros_like(src, dtype=torch.float32)
+        for i in range(src.size(0)):
+            src_weight[i] = self.tfidf.compute_tfidf_weight(src[i])
+        src = self.src_embed(src) * math.sqrt(self.transformer.d_model) * src_weight.unsqueeze(-1)
         tgt = self.tgt_embed(tgt) * math.sqrt(self.transformer.d_model)
         src = self.pos_encoder(src)
         tgt = self.pos_encoder(tgt)
@@ -83,6 +87,39 @@ class PositionalEncoding(nn.Module):
         return self.dropout(x)
 
 
+class TFIDF:
+    def __init__(self, corpus, vocab):
+        self.corpus = corpus
+        self.vocab = vocab
+        self.idf = self._compute_idf()
+
+    def _compute_idf(self):
+        df = torch.zeros(len(self.vocab), dtype=torch.float32)
+        for doc in tqdm(self.corpus):
+            for word in set(doc):
+                df[self.vocab.numberize(word)] += 1
+        df[self.vocab.numberize('<pad>')] = len(self.corpus)
+        idf = torch.log(len(self.corpus) / (df + 1))
+        return idf
+
+    def _compute_tf(self, numbered_doc):
+        tf = torch.bincount(torch.tensor(numbered_doc), minlength=len(self.vocab)).float()
+        tf = tf / len(numbered_doc)
+        return tf
+
+    def _compute_tfidf(self, numbered_doc):
+        tf = self._compute_tf(numbered_doc)
+        tfidf = tf * self.idf
+        return tfidf
+
+    def compute_tfidf_weight(self, numbered_doc):
+        tfidf = self._compute_tfidf(numbered_doc)
+        weight = tfidf[numbered_doc]
+        weight = weight / weight.mean()
+        weight.requires_grad = False
+        return weight
+
+
 class TranslationDataset(Dataset):
     def __init__(self, data, src_vocab, tgt_vocab):
         self.data = data
@@ -127,13 +164,15 @@ if __name__ == '__main__':
     dev_data = read_parallel(get_data_path(language, 'dev'), 0, 0)
     test_data = read_parallel(get_data_path(language, 'test'), 0, 0)
 
-    out_dir = 'out/' + language + '/transformer/' + sample_method
+    out_dir = 'out/' + language + '/transformer-tfidf/' + sample_method
 
     fun_vocab = Vocab()
     com_vocab = Vocab()
     for fun, com in tqdm(train_data):
         fun_vocab |= fun
         com_vocab |= com
+    fun_corpus = [_[0] for _ in train_data]
+    tfidf_fun = TFIDF(fun_corpus, fun_vocab)
 
     train_dataset = TranslationDataset(train_data, fun_vocab, com_vocab)
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, collate_fn=train_dataset.collate_fn,
@@ -141,8 +180,8 @@ if __name__ == '__main__':
     dev_dataset = TranslationDataset(dev_data, fun_vocab, com_vocab)
     dev_loader = DataLoader(dev_dataset, batch_size=16, shuffle=False, collate_fn=dev_dataset.collate_fn)
 
-    model = Transformer(fun_vocab, com_vocab, d_model=256, nhead=4, num_encoder_layers=4, num_decoder_layers=1,
-                        dim_feedforward=4 * 256, dropout=0.1)
+    model = TransformerTFIDF(fun_vocab, com_vocab, tfidf_fun, d_model=256, nhead=4, num_encoder_layers=4,
+                             num_decoder_layers=1, dim_feedforward=4 * 256, dropout=0.1)
     criterion = nn.CrossEntropyLoss(ignore_index=com_vocab.numberize('<pad>'))
     optimizer = optim.Adam(model.parameters(), lr=0.0003, betas=(0.9, 0.98), eps=1e-9)
 

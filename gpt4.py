@@ -4,7 +4,7 @@ from config import *
 
 if __name__ == '__main__':
     data = read_parallel(get_data_path(language, 'test'), 0, 0)
-    with open('out/' + language + '/gpt4.100.txt', 'r') as f:
+    with open('out/' + language + '/gpt4/gpt4.100.txt', 'r') as f:
         preds = [line.strip().split() for line in f.readlines()]
     avg_precision, avg_recall, avg_bleu, avg_meteor, avg_rouge_l = 0, 0, 0, 0, 0
     for i in tqdm(range(len(preds))):
