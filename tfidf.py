@@ -37,6 +37,7 @@ def test(data, model, vocab):
         score = model.compute_tfidf(fun)
         k = get_k(language, len(set(fun)))
         topk_words = [vocab.num_to_word[idx] for idx in np.argsort(score)[-k:]]
+        # print("Sampled keywords:", ' '.join(topk_words))
         metrics = calculate_metrics(com, topk_words)
         avg_precision += metrics['precision']
         avg_recall += metrics['recall']

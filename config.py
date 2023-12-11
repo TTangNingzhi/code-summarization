@@ -5,7 +5,7 @@ import torch
 import nltk
 
 warnings.filterwarnings("ignore")
-language = 'java'
+language = 'python'
 
 seed = 612
 random.seed(seed)

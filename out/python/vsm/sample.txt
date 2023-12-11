@@ -1,0 +1,2 @@
+rand: store 1024 mkdir while filename[ path os config def
+tfidf: 1024 file target <unk> filename chunk path filedata tmp

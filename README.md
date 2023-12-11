@@ -4,14 +4,18 @@ Course project for CSE 60657 Natural Language Processing, Fall 2023, University 
 
 ## Dataset
 
-The dataset is downloaded from [NeuralCodeSum](https://github.com/wasiahmad/NeuralCodeSum).
+The dataset is downloaded from [NeuralCodeSum](https://github.com/wasiahmad/NeuralCodeSum). You could set the dataset by
+modifying the `language` variable in `config.py` as `java` or `python`.
 
 ## Model
 
 - VSM-RAND (Vector Space Model): rand.py
 - VSM-TFIDF: tfidf.py
 - Transformer: transformer.py
+- Transformer with TFIDF: transformer_tfidf.py
 - GPT-4: gpt.py
+
+You could directly run the corresponding python file to train the model.
 
 ## Data Preprocessing
 

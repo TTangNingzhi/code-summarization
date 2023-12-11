@@ -1,0 +1,5 @@
+python gpt4.py
+Torch version: 2.0.1+cu117
+Using device: cpu
+100%|██████████████████████████████████████████████████████████| 100/100 [00:02<00:00, 44.03it/s]
+Precision: 0.2101, Recall: 0.2307, BLEU: 0.2673, METEOR: 0.1985, ROUGE-L: 0.2040
