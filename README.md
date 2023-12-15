@@ -1,6 +1,7 @@
-# Code Summarization
+# From Source Code to Natural Language: An Exploration of Code Summarization Techniques
 
 Course project for CSE 60657 Natural Language Processing, Fall 2023, University of Notre Dame.
+The poster and paper are also available in this repository.
 
 ## Dataset
 
